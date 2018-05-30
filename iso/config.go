@@ -22,6 +22,7 @@ type Config struct {
 	FloppyConfig             `mapstructure:",squash"`
 	common.RunConfig         `mapstructure:",squash"`
 	BootConfig               `mapstructure:",squash"`
+	common.WaitIpConfig      `mapstructure:",squash"`
 	Comm communicator.Config `mapstructure:",squash"`
 	common.ShutdownConfig    `mapstructure:",squash"`
 
@@ -49,6 +50,7 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 
 	errs = packer.MultiErrorAppend(errs, c.RunConfig.Prepare()...)
 	errs = packer.MultiErrorAppend(errs, c.BootConfig.Prepare()...)
+	errs = packer.MultiErrorAppend(errs, c.WaitIpConfig.Prepare()...)
 	errs = packer.MultiErrorAppend(errs, c.Comm.Prepare(&c.ctx)...)
 	errs = packer.MultiErrorAppend(errs, c.ShutdownConfig.Prepare()...)
 

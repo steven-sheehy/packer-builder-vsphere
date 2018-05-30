@@ -53,7 +53,9 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 			&common.StepRun{
 				Config: &b.config.RunConfig,
 			},
-			&common.StepWaitForIp{},
+			&common.StepWaitForIp{
+				&b.config.WaitIpConfig,
+			},
 			&communicator.StepConnect{
 				Config:    &b.config.Comm,
 				Host:      common.CommHost,
