@@ -50,6 +50,20 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 
 	if b.config.Comm.Type != "none" {
 		steps = append(steps,
+			&packerCommon.StepDownload{
+				Checksum:     b.config.ISOChecksum,
+				ChecksumType: b.config.ISOChecksumType,
+				Description:  "ISO",
+				Extension:    b.config.TargetExtension,
+				ResultKey:    "iso_path",
+				TargetPath:   b.config.TargetPath,
+				Url:          b.config.ISOUrls,
+			},
+			&common.StepRemoteUpload{
+				Key:       "iso_path",
+				Datastore: b.config.Datastore,
+				Host:      b.config.Host,
+			},
 			&StepAddCDRom{
 				Config: &b.config.CDRomConfig,
 			},

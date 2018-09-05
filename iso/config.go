@@ -18,6 +18,8 @@ type Config struct {
 	common.HardwareConfig     `mapstructure:",squash"`
 	common.ConfigParamsConfig `mapstructure:",squash"`
 
+	packerCommon.ISOConfig `mapstructure:",squash"`
+
 	CDRomConfig           `mapstructure:",squash"`
 	FloppyConfig          `mapstructure:",squash"`
 	common.RunConfig      `mapstructure:",squash"`
@@ -42,6 +44,7 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 		return nil, nil, err
 	}
 
+	isoWarnings, isoErrs := b.config.ISOConfig.Prepare(&b.config.ctx)
 	errs := new(packer.MultiError)
 	errs = packer.MultiErrorAppend(errs, c.ConnectConfig.Prepare()...)
 	errs = packer.MultiErrorAppend(errs, c.CreateConfig.Prepare()...)
