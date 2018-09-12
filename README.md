@@ -87,6 +87,11 @@ See complete Ubuntu, Windows, and macOS templates in the [examples folder](https
 * `floppy_files`(array of strings) - List of local files to be mounted to the VM floppy drive. Can be used to make Debian preseed or RHEL kickstart files available to the VM.
 * `floppy_img_path`(string) - Data store path to a floppy image that will be mounted to the VM. Cannot be used with `floppy_files` or `floppy_dir` options. Example `[datastore1] ISO/VMware Tools/10.2.0/pvscsi-Windows8.flp`.
 * `iso_paths`(array of strings) - List of data store paths to ISO files that will be mounted to the VM. Example `"[datastore1] ISO/ubuntu-16.04.3-server-amd64.iso"`.
+* `iso_urls`(array of strings) - Multiple URLs for the ISO to download. Packer will try these in order. If anything goes wrong attempting to download or while downloading a single URL, it will move on to the next. All URLs must point to the same file (same checksum). By default this is empty and iso_url is used. Only one of iso_url or iso_urls can be specified.
+* `iso_checksum `(string) - The checksum for the OS ISO file. Because ISO files are so large, this is required and Packer will verify it prior to booting a virtual machine with the ISO attached. The type of the checksum is specified with iso_checksum_type, documented below. At least one of iso_checksum and iso_checksum_url must be defined. This has precedence over iso_checksum_url type.
+* `iso_checksum_type`(string) - The type of the checksum specified in iso_checksum. Valid values are none, md5, sha1, sha256, or sha512 currently. While none will skip checksumming, this is not recommended since ISO files are generally large and corruption does happen from time to time.
+* `iso_checksum_url`(string) -  A URL to a GNU or BSD style checksum file containing a checksum for the OS ISO file. At least one of iso_checksum and iso_checksum_url must be defined. This will be ignored if iso_checksum is non empty.
+
 
 ### Provision
 
