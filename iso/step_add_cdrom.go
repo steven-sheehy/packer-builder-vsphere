@@ -13,7 +13,8 @@ type CDRomConfig struct {
 }
 
 type StepAddCDRom struct {
-	Config *CDRomConfig
+	RemotePath string
+	Config     *CDRomConfig
 }
 
 func (s *StepAddCDRom) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
@@ -26,10 +27,17 @@ func (s *StepAddCDRom) Run(_ context.Context, state multistep.StateBag) multiste
 		return multistep.ActionHalt
 	}
 
-	for _, path := range s.Config.ISOPaths {
-		if err := vm.AddCdrom(path); err != nil {
+	if path, ok := state.GetOk(s.RemotePath); ok {
+		if err := vm.AddCdrom(path.(string)); err != nil {
 			state.Put("error", fmt.Errorf("error adding a cdrom: %v", err))
 			return multistep.ActionHalt
+		}
+	} else {
+		for _, path := range s.Config.ISOPaths {
+			if err := vm.AddCdrom(path); err != nil {
+				state.Put("error", fmt.Errorf("error adding a cdrom: %v", err))
+				return multistep.ActionHalt
+			}
 		}
 	}
 

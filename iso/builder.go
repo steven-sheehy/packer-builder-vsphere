@@ -26,6 +26,7 @@ func (b *Builder) Prepare(raws ...interface{}) ([]string, error) {
 
 func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packer.Artifact, error) {
 	state := new(multistep.BasicStateBag)
+	state.Put("cache", cache)
 	state.Put("comm", &b.config.Comm)
 	state.Put("hook", hook)
 	state.Put("ui", ui)
@@ -35,6 +36,21 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 	steps = append(steps,
 		&common.StepConnect{
 			Config: &b.config.ConnectConfig,
+		},
+		&packerCommon.StepDownload{
+			Checksum:     b.config.ISOChecksum,
+			ChecksumType: b.config.ISOChecksumType,
+			Description:  "ISO",
+			Extension:    b.config.TargetExtension,
+			ResultKey:    "iso_path",
+			TargetPath:   b.config.TargetPath,
+			Url:          b.config.ISOUrls,
+		},
+		&common.StepRemoteUpload{
+			Path:      "iso_path",
+			DstPath:   "iso_remote_path",
+			Datastore: b.config.Datastore,
+			Host:      b.config.Host,
 		},
 		&StepCreateVM{
 			Config:   &b.config.CreateConfig,
@@ -50,22 +66,9 @@ func (b *Builder) Run(ui packer.Ui, hook packer.Hook, cache packer.Cache) (packe
 
 	if b.config.Comm.Type != "none" {
 		steps = append(steps,
-			&packerCommon.StepDownload{
-				Checksum:     b.config.ISOChecksum,
-				ChecksumType: b.config.ISOChecksumType,
-				Description:  "ISO",
-				Extension:    b.config.TargetExtension,
-				ResultKey:    "iso_path",
-				TargetPath:   b.config.TargetPath,
-				Url:          b.config.ISOUrls,
-			},
-			&common.StepRemoteUpload{
-				Key:       "iso_path",
-				Datastore: b.config.Datastore,
-				Host:      b.config.Host,
-			},
 			&StepAddCDRom{
-				Config: &b.config.CDRomConfig,
+				RemotePath: "iso_remote_path",
+				Config:     &b.config.CDRomConfig,
 			},
 			&packerCommon.StepCreateFloppy{
 				Files:       b.config.FloppyFiles,

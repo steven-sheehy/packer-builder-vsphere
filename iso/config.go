@@ -1,6 +1,7 @@
 package iso
 
 import (
+	"fmt"
 	packerCommon "github.com/hashicorp/packer/common"
 	"github.com/hashicorp/packer/helper/communicator"
 	"github.com/hashicorp/packer/helper/config"
@@ -44,8 +45,12 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 		return nil, nil, err
 	}
 
-	isoWarnings, isoErrs := b.config.ISOConfig.Prepare(&b.config.ctx)
+	warnings := make([]string, 0)
+
+	isoWarnings, isoErrs := c.ISOConfig.Prepare(&c.ctx)
+	warnings = append(warnings, isoWarnings...)
 	errs := new(packer.MultiError)
+	errs = packer.MultiErrorAppend(errs, isoErrs...)
 	errs = packer.MultiErrorAppend(errs, c.ConnectConfig.Prepare()...)
 	errs = packer.MultiErrorAppend(errs, c.CreateConfig.Prepare()...)
 	errs = packer.MultiErrorAppend(errs, c.LocationConfig.Prepare()...)
@@ -55,6 +60,10 @@ func NewConfig(raws ...interface{}) (*Config, []string, error) {
 	errs = packer.MultiErrorAppend(errs, c.BootConfig.Prepare()...)
 	errs = packer.MultiErrorAppend(errs, c.Comm.Prepare(&c.ctx)...)
 	errs = packer.MultiErrorAppend(errs, c.ShutdownConfig.Prepare()...)
+
+	if len(c.CDRomConfig.ISOPaths) != 0 && len(c.ISOConfig.ISOUrls) != 0 {
+		errs = packer.MultiErrorAppend(errs, fmt.Errorf("you can't use iso_paths and iso_urls at the same time"))
+	}
 
 	if len(errs.Errors) > 0 {
 		return nil, nil, errs
